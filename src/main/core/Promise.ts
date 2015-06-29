@@ -44,7 +44,7 @@ class CorePromise<T> {
         }
 
         executor((r) => {
-            this.fulfill(r);
+            CorePromise.resolvePromise(this, r);
         }, (e) => {
             this.reject(e);
         });
@@ -208,8 +208,9 @@ class CorePromise<T> {
             then = x;
         }
         
-        var execute = true;
         if (typeof then === "function") {
+            var execute = true;
+
             try {
                 then.call(x, function(value) {
                     if (execute) {
@@ -236,4 +237,3 @@ class CorePromise<T> {
         return "Promise";
     }
 }
-
