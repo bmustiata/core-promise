@@ -1,0 +1,36 @@
+{
+  "name": "core-promise",
+  "description": "A IE8+ compatible promise implementation. A+ fully compatible.",
+  "author": [
+    {
+      "name": "Bogdan Mustiata",
+      "email": "bogdan.mustiata@gmail.com"
+    }
+  ],
+  "version": "0.1.0",
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-typescript": "^0.6.2",
+    "promises-aplus-tests": "^2.1.0"
+  },
+  "keywords": [],
+  "main": "./lib/core-promise.js",
+  "bugs": {
+    "url": "https://github.com/bmustiata/core-promise/issues"
+  },
+  "licenses": [
+    {
+      "type": "BSD",
+      "url": "https://github.com/bmustiata/core-promise/blob/master/LICENSE"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bmustiata/core-promise.git"
+  },
+  "readme": "A IE8+ compatible promise implementation. A+ fully compatible.",
+  "readmeFilename": "README.md",
+  "homepage": "http://blog.ciplogic.com"
+}
