@@ -30,7 +30,7 @@
     "type": "git",
     "url": "https://github.com/bmustiata/core-promise.git"
   },
-  "readme": "A IE8+ compatible promise implementation. A+ fully compatible.",
+  "readme": "# core-promise\nA promise implementation that is fully conformant to the [Promises/A+ spec](https://github.com/promises-aplus/promises-spec),\npassing all the 872 tests from the [reference tests](https://github.com/promises-aplus/promises-tests).\nAnd works from IE8+ without any dependency. (`bower install core-promise`)\n## Usage\n```javascript\nvar Promise = require('core-promise').Promise,\n    CorePromise = require('core-promise').CorePromise;\n// Promise will default to the platform Promise if it exists\n// e.g. in node 0.12, it will be node's own promise, otherwise\n// it will be the internal implementation: CorePromise\n// ..\n// Create new promises with:\nvar p = new Promise(function(fulfill, reject)) {\n    //..\n};\n```\n",
   "readmeFilename": "README.md",
   "homepage": "http://blog.ciplogic.com"
 }

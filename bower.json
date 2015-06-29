@@ -1,0 +1,30 @@
+{
+  "name": "core-promise",
+  "version": "0.1.0",
+  "authors": [
+    "Bogdan Mustiata <bogdan.mustiata@gmail.com>"
+  ],
+  "description": "A Promises/A+ 1.1 fully compliant Promise implementation, that works on IE8+",
+  "main": "lib/core-promise.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "promise",
+    "ie8",
+    "promises",
+    "aplus",
+    "async"
+  ],
+  "license": "BSD",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "src",
+    "bower_components",
+    "test",
+    "tests",
+    "typings",
+    "Gruntfile.js"
+  ]
+}
