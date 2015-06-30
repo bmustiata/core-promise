@@ -241,7 +241,7 @@ var com;
     })(ciplogic = com.ciplogic || (com.ciplogic = {}));
 })(com || (com = {}));
 /// <reference path="../core/Promise.ts" />
-/// <reference path="../../../typings/node/node.d.ts" />
-module.exports.Promise = typeof Promise != "undefined" ? Promise : com.ciplogic.CorePromise;
-module.exports.CorePromise = com.ciplogic.CorePromise;
+if (typeof window['Promise'] == "undefined") {
+    window['Promise'] = com.ciplogic.CorePromise;
+}
 //# sourceMappingURL=core-promise.js.map

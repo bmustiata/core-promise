@@ -7,6 +7,10 @@ module.exports = function(grunt) {
         clean: {
             dist : [
                 "lib/"
+            ],
+
+            client : [
+                "client/"
             ]
         },
 
@@ -20,8 +24,23 @@ module.exports = function(grunt) {
                 files: [{
                     dest: "lib/core-promise.js",
                     src: [
-                        "src/main/core/**/*.ts",
-                        "src/main/core/**/*.d.ts"
+                        "src/main/node/**/*.ts",
+                        "src/main/node/**/*.d.ts"
+                    ]
+                }]
+            },
+
+            "client" : {
+                options: {
+                    module : 'amd',
+                    sourceMap: true,
+                    declaration: true,
+                },
+                files: [{
+                    dest: "client/core-promise.js",
+                    src: [
+                        "src/main/client/**/*.ts",
+                        "src/main/client/**/*.d.ts"
                     ]
                 }]
             }
@@ -33,6 +52,15 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
 
     // register our tasks:
-    grunt.registerTask('default', ['clean', 'typescript']);
+    grunt.registerTask('clean-client', ['clean:client']);
+    grunt.registerTask('build-client', ['typescript:client']);
+
+    grunt.registerTask('clean-dist', ['clean:dist']);
+    grunt.registerTask('build-dist', ['typescript:dist']);
+
+    grunt.registerTask('client', ['clean-client', 'build-client']);
+    grunt.registerTask('dist', ['clean-dist', 'build-dist']);
+
+    grunt.registerTask('default', ['dist', 'client']);
 };
 

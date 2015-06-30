@@ -1,5 +1,7 @@
 /// <reference path="nextTick.ts"/>
 
+module com.ciplogic {
+
 /**
  * A promise can be in any of these states. FULFILLED and REJECTED are final states for a promise.
  */
@@ -27,7 +29,7 @@ class PromiseFollowUp<X> {
  * <p>This implementation is fully compatible with the specification from: http://promisesaplus.com/,
  * and passes all the tests defined here: https://github.com/promises-aplus/promises-tests.</p>
  */
-class CorePromise<T> {
+export class CorePromise<T> {
     private state : PromiseState = PromiseState.PENDING;
     private value : any; // or reason if state == PromiseState.REJECTED
 
@@ -117,7 +119,7 @@ class CorePromise<T> {
 
     private notifyCallbacks() {
         if (this.state !== PromiseState.PENDING) {
-            nextTick(() => {
+            com.ciplogic.nextTick(() => {
                 var followUps = this.followUps;
                 this.followUps = [];
 
@@ -185,7 +187,7 @@ class CorePromise<T> {
             promise.fulfill(x);
             return;
         }
-        
+
         if (x instanceof CorePromise) {
             x.then(function(v) {
                 promise.fulfill(v);
@@ -207,7 +209,7 @@ class CorePromise<T> {
         if (!then && typeof x === "function") {
             then = x;
         }
-        
+
         if (typeof then === "function") {
             var execute = true;
 
@@ -236,4 +238,6 @@ class CorePromise<T> {
     toString() {
         return "Promise";
     }
+}
+
 }

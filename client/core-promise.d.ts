@@ -59,4 +59,3 @@ declare module com.ciplogic {
         toString(): string;
     }
 }
-declare var Promise: any;
