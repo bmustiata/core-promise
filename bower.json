@@ -5,7 +5,7 @@
     "Bogdan Mustiata <bogdan.mustiata@gmail.com>"
   ],
   "description": "A Promises/A+ 1.1 fully compliant Promise implementation, that works on IE8+",
-  "main": "lib/core-promise.js",
+  "main": "client/core-promise.js",
   "moduleType": [
     "globals"
   ],

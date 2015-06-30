@@ -10,6 +10,7 @@
   "version": "0.1.0",
   "dependencies": {},
   "devDependencies": {
+    "es5-shim": "^4.1.7",
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "^0.6.0",
     "grunt-typescript": "^0.6.2",

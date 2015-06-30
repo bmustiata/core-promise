@@ -1,4 +1,6 @@
-var CorePromise = require("../lib/core-promise.js").CorePromise;
+var CorePromise = require("../lib/core-promise.js").CorePromise,
+    es5shim = require("es5-shim"),
+    es5sham = require("es5-shim/es5-sham");
 
 var adapter = {
     /**

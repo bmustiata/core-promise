@@ -3,7 +3,7 @@ var com;
 (function (com) {
     var ciplogic;
     (function (ciplogic) {
-        var callbacks = [], nextTickPointer = internalNextTick, nextTickFunction = typeof process != "undefined" && typeof process.nextTick == "Function" ? process.nextTick : setTimeout;
+        var callbacks = [], nextTickPointer = internalNextTick, nextTickFunction = typeof process != "undefined" && typeof process.nextTick == "function" ? process.nextTick : setTimeout;
         function nextTick(callback) {
             nextTickPointer(callback);
         }
