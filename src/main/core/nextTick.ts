@@ -3,7 +3,7 @@
 module com.ciplogic {
     var callbacks = [],
         nextTickPointer = internalNextTick,
-        nextTickFunction = typeof process != "undefined" && typeof process.nextTick == "function" ? process.nextTick : setTimeout;
+        nextTickFunction : Function = typeof process != "undefined" && typeof process.nextTick == "function" ? process.nextTick : setTimeout;
 
     export function nextTick(callback: Function) {
         nextTickPointer(callback);
@@ -12,7 +12,7 @@ module com.ciplogic {
     function internalNextTick(callback: Function) {
         callbacks.push(callback);
         //setTimeout(runTicks, 0);
-        nextTickFunction.call(null, runTicks, 0);
+        nextTickFunction(runTicks, 0);
     }
 
     function addCallback(callback: Function) {

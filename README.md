@@ -37,5 +37,6 @@ var p = new Promise(function(fulfill, reject)) {
 
 ## ChangeLog
 
+* 2015-06-30 v0.1.2 *BugFix* `setTimeout` call it via `()` not `.call` for IE8
 * 2015-06-30 v0.1.1 Browserify browser tests via mocha.
 * 2015-06-30 v0.1.0 Promises/A+ 1.1 compatible.

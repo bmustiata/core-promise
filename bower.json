@@ -1,6 +1,6 @@
 {
   "name": "core-promise",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "authors": [
     "Bogdan Mustiata <bogdan.mustiata@gmail.com>"
   ],
@@ -22,6 +22,7 @@
     "node_modules",
     "src",
     "bower_components",
+    "lib",
     "test",
     "tests",
     "typings",
