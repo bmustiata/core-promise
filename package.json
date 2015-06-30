@@ -7,7 +7,7 @@
       "email": "bogdan.mustiata@gmail.com"
     }
   ],
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies": {},
   "devDependencies": {
     "es5-shim": "^4.1.7",
@@ -31,7 +31,7 @@
     "type": "git",
     "url": "https://github.com/bmustiata/core-promise.git"
   },
-  "readme": "# core-promise\nA promise implementation that is fully conformant to the [Promises/A+ spec](https://github.com/promises-aplus/promises-spec),\npassing all the 872 tests from the [reference tests](https://github.com/promises-aplus/promises-tests).\nAnd works from IE8+ without any dependency. (`bower install core-promise`)\n## Usage\n```javascript\nvar Promise = require('core-promise').Promise,\n    CorePromise = require('core-promise').CorePromise;\n// Promise will default to the platform Promise if it exists\n// e.g. in node 0.12, it will be node's own promise, otherwise\n// it will be the internal implementation: CorePromise\n// ..\n// Create new promises with:\nvar p = new Promise(function(fulfill, reject)) {\n    //..\n};\n```\n",
+  "readme": "# core-promise\nA promise implementation that is fully conformant to the [Promises/A+ spec](https://github.com/promises-aplus/promises-spec),\npassing all the 872 tests from the [reference tests](https://github.com/promises-aplus/promises-tests).\nAnd works from IE8+ without any dependency. (`bower install core-promise`)\nOn IE9 only 2 tests are failing (for strict functions the this comes as the `window` object\ninstead of `undefined` - this is a browser bug).\nOn IE8 multiple tests are failing due to the way the tests themselves are written\n(calling `Object.create`, using properties, etc. that the shims are not implementing fully).\nNote that the implementation of `CorePromise` itself is compield in pure ES3 JavaScript, and doesn't need\n*any* polyfill.\n## Usage\nThe recommended way to use the `core-promise` is to use the Promise class, that\nwill use the native Promise class if it is available.\n```javascript\nvar Promise = require('core-promise').Promise,\n    CorePromise = require('core-promise').CorePromise;\n// ..\n// Create new promises with:\nvar p = new Promise(function(fulfill, reject)) {\n    //..\n};\n```\n## ChangeLog\n* 2015-06-30 v0.1.1 Browserify browser tests via mocha.\n* 2015-06-30 v0.1.0 Promises/A+ 1.1 compatible.\n",
   "readmeFilename": "README.md",
   "homepage": "http://blog.ciplogic.com"
 }
