@@ -54,6 +54,7 @@ var p = new Promise(function(fulfill, reject)) {
 
 ## ChangeLog
 
+* 2015-07-01 v0.2.0 ES6 compatible functions added (resolve, all, race, reject).
 * 2015-06-30 v0.1.3 Documentation.
 * 2015-06-30 v0.1.2 *BugFix* `setTimeout` call it via `()` not `.call` for IE8
 * 2015-06-30 v0.1.1 Browserify browser tests via mocha.
