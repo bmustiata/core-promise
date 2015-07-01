@@ -74,7 +74,7 @@ export class CorePromise<T> {
     }
 
     /**
-     *
+     * Chain other callbacks to be executed after the promise gets resolved or rejected.
      * @param onFulfill
      * @param onReject
      * @returns {Promise}
@@ -101,6 +101,9 @@ export class CorePromise<T> {
         return followUp.promise;
     }
     
+    /**
+     * Chain other callbacks after the promise gets rejected.
+     */
     catch<T>(onReject?: (reason: any) => any): CorePromise<T>;
     catch(onReject? : (reason : any) => any) : CorePromise<any> {
         return this.then(undefined, onReject);
@@ -168,6 +171,9 @@ export class CorePromise<T> {
     /**
      * Resolve the given value, using the promise resolution algorithm.
      */
+    static resolve(x : number) : CorePromise<number>;
+    static resolve(x : string) : CorePromise<string>;
+    static resolve(x : any) : CorePromise<any>;
     static resolve<U>(x : any) : CorePromise<U> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.resolve must be a constructor.");
@@ -189,7 +195,7 @@ export class CorePromise<T> {
      * @param {Array<Promise<any>>} args
      * @returns {Promise<Iterable<T>>}
      */
-    public static all(iterable: Array<CorePromise<any>>) : CorePromise<Array<any>> {
+    public static all<T>(iterable: Array<CorePromise<any>>) : CorePromise<Array<T>> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.all must be a constructor.");
         }
@@ -243,7 +249,7 @@ export class CorePromise<T> {
      * @param {Array<Promise<any>>} args
      * @returns {Promise<Iterable<T>>}
      */
-    public static race(iterable: Array<CorePromise<any>>) : CorePromise<any> {
+    public static race<T>(iterable: Array<CorePromise<any>>) : CorePromise<Array<T>> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.race must be a constructor.");
         }

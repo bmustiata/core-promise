@@ -38,6 +38,10 @@ var com;
 (function (com) {
     var ciplogic;
     (function (ciplogic) {
+        /**
+         * Iterates over all the elements in the iterable, calling the callback on each one.
+         * Basically poor man's `Array.forEach()`
+         */
         function forEach(iterable, callback) {
             for (var i = 0; i < iterable.length; i++) {
                 callback(iterable[i], i);
@@ -75,17 +79,25 @@ var com;
         var CorePromise = (function () {
             function CorePromise(executor) {
                 var _this = this;
-                this.state = PromiseState.PENDING;
-                this.followUps = [];
                 if (!executor) {
                     throw new Error("You need an executor(resolve, reject) to be passed to " +
                         "the constructor of a Promise");
                 }
-                executor(function (r) {
-                    CorePromise.resolvePromise(_this, r);
-                }, function (e) {
-                    _this.reject(e);
-                });
+                if (typeof this != "object") {
+                    throw new TypeError("The this object for a Promise must be an object.");
+                }
+                this.followUps = [];
+                this.state = PromiseState.PENDING;
+                try {
+                    executor(function (r) {
+                        CorePromise.resolvePromise(_this, r);
+                    }, function (e) {
+                        _this.reject(e);
+                    });
+                }
+                catch (e) {
+                    this.reject(e);
+                }
             }
             CorePromise.prototype.then = function (onFulfill, onReject) {
                 var followUp = new PromiseFollowUp();
@@ -99,6 +111,9 @@ var com;
                 this.followUps.push(followUp);
                 this.notifyCallbacks();
                 return followUp.promise;
+            };
+            CorePromise.prototype.catch = function (onReject) {
+                return this.then(undefined, onReject);
             };
             /**
              * Always permits adding some code into the promise chain that will be called
@@ -154,9 +169,15 @@ var com;
                 }
             };
             CorePromise.resolve = function (x) {
-                var result = new CorePromise(function (fulfill, reject) {
+                if (typeof this != "function") {
+                    throw new TypeError("The this of Promise.resolve must be a constructor.");
+                }
+                var result = new this(function (fulfill, reject) {
+                    CorePromise.resolvePromise({
+                        fulfill: fulfill,
+                        reject: reject
+                    }, x);
                 });
-                CorePromise.resolvePromise(result, x);
                 return result;
             };
             /**
@@ -166,10 +187,24 @@ var com;
              * @returns {Promise<Iterable<T>>}
              */
             CorePromise.all = function (iterable) {
-                return new CorePromise(function (resolve, reject) {
+                if (typeof this != "function") {
+                    throw new TypeError("The this of Promise.all must be a constructor.");
+                }
+                if (!iterable || typeof iterable.length == "undefined") {
+                    return CorePromise.reject(new TypeError("Passed a non iterable to Promise.all(): " + typeof iterable));
+                }
+                if (iterable.length == 1) {
+                    return CorePromise.resolve(iterable[0])
+                        .then(function (it) { return [it]; });
+                }
+                if (iterable.length == 0) {
+                    return CorePromise.resolve([]);
+                }
+                return new this(function (resolve, reject) {
                     var unresolvedPromisesCount = iterable.length, resolvedValues = new Array(iterable.length);
                     forEach(iterable, function (it, i) {
-                        CorePromise.resolve(it[i]).then(function () {
+                        CorePromise.resolve(it).then(function (value) {
+                            resolvedValues[i] = value;
                             unresolvedPromisesCount--;
                             if (unresolvedPromisesCount == 0) {
                                 resolve(resolvedValues);
@@ -182,15 +217,43 @@ var com;
              * Create a new promise that is already rejected with the given value.
              */
             CorePromise.reject = function (reason) {
-                return new CorePromise(function (fulfill, reject) {
+                if (typeof this != "function") {
+                    throw new TypeError("The this of Promise.reject must be a constructor.");
+                }
+                return new this(function (fulfill, reject) {
                     reject(reason);
                 });
             };
             /**
-             * Resolve a promise.
-             * @param {Promise} promise     The promise to resolve.
-             * @param {any} x               The value to resolve against.
+             * The Promise.race(iterable) method returns the first promise that resolves or
+             * rejects from the iterable argument.
+             * @param {Array<Promise<any>>} args
+             * @returns {Promise<Iterable<T>>}
              */
+            CorePromise.race = function (iterable) {
+                if (typeof this != "function") {
+                    throw new TypeError("The this of Promise.race must be a constructor.");
+                }
+                if (!iterable || typeof iterable.length == "undefined") {
+                    return CorePromise.reject(new TypeError("Passed a non iterable to Promise.race(): " + typeof iterable));
+                }
+                if (iterable.length == 1) {
+                    return CorePromise.resolve(iterable[0])
+                        .then(function (it) { return [it]; });
+                }
+                if (iterable.length == 0) {
+                    return new this(function (resolve, reject) { });
+                }
+                return new this(function (resolve, reject) {
+                    var rejectedPromiseCount = 0;
+                    for (var i = 0; i < iterable.length; i++) {
+                        CorePromise.resolvePromise({
+                            fulfill: resolve,
+                            reject: reject
+                        }, iterable[i]);
+                    }
+                });
+            };
             CorePromise.resolvePromise = function (promise, x) {
                 if (promise === x) {
                     throw new TypeError();

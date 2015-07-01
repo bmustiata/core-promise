@@ -19,7 +19,7 @@ declare module com.ciplogic {
          */
         constructor(executor: (resolve: (value) => void, reject: (value) => void) => any);
         /**
-         *
+         * Chain other callbacks to be executed after the promise gets resolved or rejected.
          * @param onFulfill
          * @param onReject
          * @returns {Promise}
@@ -27,6 +27,10 @@ declare module com.ciplogic {
         then<V>(onFulfill?: (value: T) => CorePromise<V>, onReject?: (reason: any) => any): CorePromise<V>;
         then<V>(onFulfill?: (value: T) => V, onReject?: (reason: any) => any): CorePromise<V>;
         then<V>(onFulfill?: (value: T) => void, onReject?: (reason: any) => any): CorePromise<T>;
+        /**
+         * Chain other callbacks after the promise gets rejected.
+         */
+        catch<T>(onReject?: (reason: any) => any): CorePromise<T>;
         /**
          * Always permits adding some code into the promise chain that will be called
          * irrespective if the chain is successful or not, in order to be used similarily
@@ -38,23 +42,36 @@ declare module com.ciplogic {
         private fulfill(value);
         private reject(reason);
         private notifyCallbacks();
-        static resolve<U>(x: any): CorePromise<U>;
+        /**
+         * Resolve the given value, using the promise resolution algorithm.
+         */
+        static resolve(x: number): CorePromise<number>;
+        static resolve(x: string): CorePromise<string>;
+        static resolve(x: any): CorePromise<any>;
         /**
          * The Promise.all(iterable) method returns a promise that resolves when all of the promises
          * in the iterable argument have resolved.
          * @param {Array<Promise<any>>} args
          * @returns {Promise<Iterable<T>>}
          */
-        static all(iterable: Array<CorePromise<any>>): CorePromise<Array<any>>;
+        static all<T>(iterable: Array<CorePromise<any>>): CorePromise<Array<T>>;
         /**
          * Create a new promise that is already rejected with the given value.
          */
         static reject<U>(reason: any): CorePromise<U>;
         /**
+         * The Promise.race(iterable) method returns the first promise that resolves or
+         * rejects from the iterable argument.
+         * @param {Array<Promise<any>>} args
+         * @returns {Promise<Iterable<T>>}
+         */
+        static race<T>(iterable: Array<CorePromise<any>>): CorePromise<Array<T>>;
+        /**
          * Resolve a promise.
          * @param {Promise} promise     The promise to resolve.
          * @param {any} x               The value to resolve against.
          */
+        private static resolvePromise<U>(promise, x);
         private static resolvePromise<U>(promise, x);
         toString(): string;
     }
