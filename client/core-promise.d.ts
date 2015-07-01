@@ -42,10 +42,10 @@ declare module com.ciplogic {
         /**
          * The Promise.all(iterable) method returns a promise that resolves when all of the promises
          * in the iterable argument have resolved.
-         * @param args
+         * @param {Array<Promise<any>>} args
          * @returns {Promise<Iterable<T>>}
          */
-        static all<T>(args: Array<any>): CorePromise<Array<T>>;
+        static all(iterable: Array<CorePromise<any>>): CorePromise<Array<any>>;
         /**
          * Create a new promise that is already rejected with the given value.
          */

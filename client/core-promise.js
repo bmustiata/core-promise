@@ -38,6 +38,11 @@ var com;
 (function (com) {
     var ciplogic;
     (function (ciplogic) {
+        function forEach(iterable, callback) {
+            for (var i = 0; i < iterable.length; i++) {
+                callback(iterable[i], i);
+            }
+        }
         /**
          * A promise can be in any of these states. FULFILLED and REJECTED are final states for a promise.
          */
@@ -157,15 +162,21 @@ var com;
             /**
              * The Promise.all(iterable) method returns a promise that resolves when all of the promises
              * in the iterable argument have resolved.
-             * @param args
+             * @param {Array<Promise<any>>} args
              * @returns {Promise<Iterable<T>>}
              */
-            CorePromise.all = function (args) {
-                // var promises : Array<Promise<T>> = [];
-                // for (var i = 0; i < args.length; i++) {
-                //     promises.push(Promise.resolve(args[i]));
-                // }
-                throw new Error('not implemented');
+            CorePromise.all = function (iterable) {
+                return new CorePromise(function (resolve, reject) {
+                    var unresolvedPromisesCount = iterable.length, resolvedValues = new Array(iterable.length);
+                    forEach(iterable, function (it, i) {
+                        CorePromise.resolve(it[i]).then(function () {
+                            unresolvedPromisesCount--;
+                            if (unresolvedPromisesCount == 0) {
+                                resolve(resolvedValues);
+                            }
+                        }, reject);
+                    });
+                });
             };
             /**
              * Create a new promise that is already rejected with the given value.

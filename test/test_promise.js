@@ -1,6 +1,6 @@
 var CorePromise = require("../lib/core-promise.js").CorePromise,
-    es5shim = require("es5-shim"),
-    es5sham = require("es5-shim/es5-sham");
+    assert = require("assert"),
+    Promise = CorePromise;
 
 var adapter = {
     /**
@@ -46,8 +46,16 @@ var adapter = {
                 } catch (e2) {
                     console.log("ERROR:", e2);
                 }
-            }
+            },
         };
+    },
+    
+    defineGlobalPromise : function(global) {
+        global.Promise = CorePromise;
+        global.assert = assert;
+     },
+    
+    removeGlobalPromise : function(global) {
     }
 };
 
@@ -55,4 +63,7 @@ describe("Promises/A+ Tests", function () {
     require("promises-aplus-tests").mocha(adapter);
 });
 
+describe("Promise ES6 Tests", function () {
+    require("promises-es6-tests").mocha(adapter);
+});
 

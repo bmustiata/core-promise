@@ -19,6 +19,7 @@ module com.ciplogic {
         callbacks.push(callback);
     }
 
+
     function runTicks() {
         var fn;
 
