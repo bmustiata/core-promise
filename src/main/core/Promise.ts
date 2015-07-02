@@ -40,10 +40,10 @@ class PromiseFollowUp<X> {
  * and passes all the tests defined here: https://github.com/promises-aplus/promises-tests.</p>
  */
 export class CorePromise<T> {
-    private state : PromiseState;
-    private value : any; // or reason if state == PromiseState.REJECTED
+    private _state : PromiseState;
+    private _value : any; // or reason if state == PromiseState.REJECTED
 
-    private followUps;
+    private _followUps;
 
     /**
      * @param {object} executor A function with two parameters.
@@ -59,17 +59,29 @@ export class CorePromise<T> {
             throw new TypeError("The this object for a Promise must be an object.");
         }
         
-        this.followUps = [];
-        this.state = PromiseState.PENDING;
+        if (this instanceof Number || this instanceof String || this instanceof Date || this instanceof Boolean) {
+            throw new TypeError("The this object for a Promise must be an object.");
+        }
+        
+        if (typeof this._state != "undefined") {
+            throw new TypeError("Already constructed promise passed as this.");
+        }
+        
+        if (typeof executor != "function") {
+            throw new TypeError("Executor must be a callable object.");
+        }
+
+        this._followUps = [];
+        this._state = PromiseState.PENDING;
         
         try {
             executor((r) => {
                 CorePromise.resolvePromise(this, r);
             }, (e) => {
-                this.reject(e);
+                this._reject(e);
             });
         } catch (e) {
-            this.reject(e);
+            this._reject(e);
         }
     }
 
@@ -94,9 +106,9 @@ export class CorePromise<T> {
         }
 
         followUp.promise = new CorePromise(function(fulfill, reject){});
-        this.followUps.push( followUp );
+        this._followUps.push( followUp );
 
-        this.notifyCallbacks();
+        this._notifyCallbacks();
 
         return followUp.promise;
     }
@@ -108,7 +120,7 @@ export class CorePromise<T> {
     catch(onReject? : (reason : any) => any) : CorePromise<any> {
         return this.then(undefined, onReject);
     }
-
+    
     /**
      * Always permits adding some code into the promise chain that will be called
      * irrespective if the chain is successful or not, in order to be used similarily
@@ -125,49 +137,6 @@ export class CorePromise<T> {
         });
     }
 
-    private transition(state : PromiseState, value) {
-        if (this.state == PromiseState.PENDING) {
-            this.state = state;
-            this.value = value;
-
-            this.notifyCallbacks();
-        }
-    }
-
-    private fulfill(value : T) : CorePromise<T> {
-        this.transition(PromiseState.FULFILLED, value);
-
-        return this;
-    }
-
-    private reject(reason : any) : CorePromise<T> {
-        this.transition(PromiseState.REJECTED, reason);
-
-        return this;
-    }
-
-    private notifyCallbacks() {
-        if (this.state !== PromiseState.PENDING) {
-            com.ciplogic.nextTick(() => {
-                var followUps = this.followUps;
-                this.followUps = [];
-
-                for (var i = 0; i < followUps.length; i++) {
-                    try {
-                        if (followUps[i].callbacks[ this.state ] == null) {
-                            followUps[i].promise.transition(this.state, this.value);
-                        } else {
-                            var result = followUps[i].callbacks[ this.state ].call(undefined, this.value);
-                            CorePromise.resolvePromise(followUps[i].promise, result);
-                        }
-                    } catch (e) {
-                        followUps[i].promise.transition(PromiseState.REJECTED, e);
-                    }
-                }
-            });
-        }
-    }
-
     /**
      * Resolve the given value, using the promise resolution algorithm.
      */
@@ -178,11 +147,15 @@ export class CorePromise<T> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.resolve must be a constructor.");
         }
-
+        
+        if (x instanceof CorePromise) {
+            return x;
+        }
+        
         var result = new this((fulfill, reject) => {
             CorePromise.resolvePromise({
-                fulfill: fulfill,
-                reject: reject
+                _fulfill: fulfill,
+                _reject: reject
             }, x);
         });
 
@@ -267,13 +240,20 @@ export class CorePromise<T> {
             return new this(function(resolve, reject) {});
         }
         
+        // if any of the promises is already done, resolve them faster.
+        for (var i = 0; i < iterable.length; i++) {
+            if (iterable[i] instanceof CorePromise && iterable[i]._state != PromiseState.PENDING) {
+                return iterable[i];
+            }
+        }
+        
         return new this<any>(function(resolve, reject) {
             var rejectedPromiseCount = 0;
             
             for (var i = 0; i < iterable.length; i++) {
                 CorePromise.resolvePromise({
-                    fulfill: resolve,
-                    reject: reject
+                    _fulfill: resolve,
+                    _reject: reject
                 }, iterable[i]);
             }
         });
@@ -292,15 +272,15 @@ export class CorePromise<T> {
         }
 
         if ((typeof x !== "function") && (typeof x !== "object") || !x) {
-            promise.fulfill(x);
+            promise._fulfill(x);
             return;
         }
 
         if (x instanceof CorePromise) {
             x.then(function(v) {
-                promise.fulfill(v);
+                promise._fulfill(v);
             }, function(r) {
-                promise.reject(r);
+                promise._reject(r);
             });
             return;
         }
@@ -310,7 +290,7 @@ export class CorePromise<T> {
         try {
             then = x.then;
         } catch (e) {
-            promise.reject(e);
+            promise._reject(e);
             return;
         }
 
@@ -330,21 +310,64 @@ export class CorePromise<T> {
                 }, function(reason) {
                     if (execute) {
                         execute = false;
-                        promise.reject(reason);
+                        promise._reject(reason);
                     }
                 });
             } catch(e) {
                 if (execute) {
-                    promise.reject(e);
+                    promise._reject(e);
                 }
             }
         } else {
-            promise.fulfill(x);
+            promise._fulfill(x);
         }
     }
 
-    toString() {
-        return "Promise";
+    private _transition(state : PromiseState, value) {
+        if (this._state == PromiseState.PENDING) {
+            this._state = state;
+            this._value = value;
+
+            this._notifyCallbacks();
+        }
+    }
+
+    private _fulfill(value : T) : CorePromise<T> {
+        this._transition(PromiseState.FULFILLED, value);
+
+        return this;
+    }
+
+    private _reject(reason : any) : CorePromise<T> {
+        this._transition(PromiseState.REJECTED, reason);
+
+        return this;
+    }
+
+    private _notifyCallbacks() {
+        if (this._state !== PromiseState.PENDING) {
+            var followUps = this._followUps;
+            this._followUps = [];
+
+            com.ciplogic.nextTick(() => {
+                for (var i = 0; i < followUps.length; i++) {
+                    var followUpPromise : CorePromise<any>; 
+
+                    followUpPromise = followUps[i].promise;
+                        
+                    try {
+                        if (followUps[i].callbacks[ this._state ] == null) {
+                            followUpPromise._transition(this._state, this._value);
+                        } else {
+                            var result = followUps[i].callbacks[ this._state ].call(undefined, this._value);
+                            CorePromise.resolvePromise(followUpPromise, result);
+                        }
+                    } catch (e) {
+                        followUpPromise._transition(PromiseState.REJECTED, e);
+                    }
+                }
+            });
+        }
     }
 }
 

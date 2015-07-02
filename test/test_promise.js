@@ -60,7 +60,7 @@ var adapter = {
 };
 
 describe("Promises/A+ Tests", function () {
-    require("promises-aplus-tests").mocha(adapter);
+     require("promises-aplus-tests").mocha(adapter);
 });
 
 describe("Promise ES6 Tests", function () {

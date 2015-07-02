@@ -11,9 +11,9 @@ declare module com.ciplogic {
      * and passes all the tests defined here: https://github.com/promises-aplus/promises-tests.</p>
      */
     class CorePromise<T> {
-        private state;
-        private value;
-        private followUps;
+        private _state;
+        private _value;
+        private _followUps;
         /**
          * @param {object} executor A function with two parameters.
          */
@@ -38,10 +38,6 @@ declare module com.ciplogic {
          * @param always
          */
         always(fn: Function): CorePromise<T>;
-        private transition(state, value);
-        private fulfill(value);
-        private reject(reason);
-        private notifyCallbacks();
         /**
          * Resolve the given value, using the promise resolution algorithm.
          */
@@ -73,6 +69,9 @@ declare module com.ciplogic {
          */
         private static resolvePromise<U>(promise, x);
         private static resolvePromise<U>(promise, x);
-        toString(): string;
+        private _transition(state, value);
+        private _fulfill(value);
+        private _reject(reason);
+        private _notifyCallbacks();
     }
 }
