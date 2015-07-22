@@ -88,17 +88,26 @@ var com;
                 if (typeof this != "object") {
                     throw new TypeError("The this object for a Promise must be an object.");
                 }
-                this.followUps = [];
-                this.state = PromiseState.PENDING;
+                if (this instanceof Number || this instanceof String || this instanceof Date || this instanceof Boolean) {
+                    throw new TypeError("The this object for a Promise must be an object.");
+                }
+                if (typeof this._state != "undefined") {
+                    throw new TypeError("Already constructed promise passed as this.");
+                }
+                if (typeof executor != "function") {
+                    throw new TypeError("Executor must be a callable object.");
+                }
+                this._followUps = [];
+                this._state = PromiseState.PENDING;
                 try {
                     executor(function (r) {
                         CorePromise.resolvePromise(_this, r);
                     }, function (e) {
-                        _this.reject(e);
+                        _this._reject(e);
                     });
                 }
                 catch (e) {
-                    this.reject(e);
+                    this._reject(e);
                 }
             }
             CorePromise.prototype.then = function (onFulfill, onReject) {
@@ -110,8 +119,8 @@ var com;
                     followUp.callbacks[PromiseState.REJECTED] = onReject;
                 }
                 followUp.promise = new CorePromise(function (fulfill, reject) { });
-                this.followUps.push(followUp);
-                this.notifyCallbacks();
+                this._followUps.push(followUp);
+                this._notifyCallbacks();
                 return followUp.promise;
             };
             CorePromise.prototype.catch = function (onReject) {
@@ -132,52 +141,17 @@ var com;
                     throw reason;
                 });
             };
-            CorePromise.prototype.transition = function (state, value) {
-                if (this.state == PromiseState.PENDING) {
-                    this.state = state;
-                    this.value = value;
-                    this.notifyCallbacks();
-                }
-            };
-            CorePromise.prototype.fulfill = function (value) {
-                this.transition(PromiseState.FULFILLED, value);
-                return this;
-            };
-            CorePromise.prototype.reject = function (reason) {
-                this.transition(PromiseState.REJECTED, reason);
-                return this;
-            };
-            CorePromise.prototype.notifyCallbacks = function () {
-                var _this = this;
-                if (this.state !== PromiseState.PENDING) {
-                    com.ciplogic.nextTick(function () {
-                        var followUps = _this.followUps;
-                        _this.followUps = [];
-                        for (var i = 0; i < followUps.length; i++) {
-                            try {
-                                if (followUps[i].callbacks[_this.state] == null) {
-                                    followUps[i].promise.transition(_this.state, _this.value);
-                                }
-                                else {
-                                    var result = followUps[i].callbacks[_this.state].call(undefined, _this.value);
-                                    CorePromise.resolvePromise(followUps[i].promise, result);
-                                }
-                            }
-                            catch (e) {
-                                followUps[i].promise.transition(PromiseState.REJECTED, e);
-                            }
-                        }
-                    });
-                }
-            };
             CorePromise.resolve = function (x) {
                 if (typeof this != "function") {
                     throw new TypeError("The this of Promise.resolve must be a constructor.");
                 }
+                if (x instanceof CorePromise) {
+                    return x;
+                }
                 var result = new this(function (fulfill, reject) {
                     CorePromise.resolvePromise({
-                        fulfill: fulfill,
-                        reject: reject
+                        _fulfill: fulfill,
+                        _reject: reject
                     }, x);
                 });
                 return result;
@@ -246,12 +220,18 @@ var com;
                 if (iterable.length == 0) {
                     return new this(function (resolve, reject) { });
                 }
+                // if any of the promises is already done, resolve them faster.
+                for (var i = 0; i < iterable.length; i++) {
+                    if (iterable[i] instanceof CorePromise && iterable[i]._state != PromiseState.PENDING) {
+                        return iterable[i];
+                    }
+                }
                 return new this(function (resolve, reject) {
                     var rejectedPromiseCount = 0;
                     for (var i = 0; i < iterable.length; i++) {
                         CorePromise.resolvePromise({
-                            fulfill: resolve,
-                            reject: reject
+                            _fulfill: resolve,
+                            _reject: reject
                         }, iterable[i]);
                     }
                 });
@@ -261,14 +241,14 @@ var com;
                     throw new TypeError();
                 }
                 if ((typeof x !== "function") && (typeof x !== "object") || !x) {
-                    promise.fulfill(x);
+                    promise._fulfill(x);
                     return;
                 }
                 if (x instanceof CorePromise) {
                     x.then(function (v) {
-                        promise.fulfill(v);
+                        promise._fulfill(v);
                     }, function (r) {
-                        promise.reject(r);
+                        promise._reject(r);
                     });
                     return;
                 }
@@ -277,7 +257,7 @@ var com;
                     then = x.then;
                 }
                 catch (e) {
-                    promise.reject(e);
+                    promise._reject(e);
                     return;
                 }
                 if (!then && typeof x === "function") {
@@ -294,22 +274,59 @@ var com;
                         }, function (reason) {
                             if (execute) {
                                 execute = false;
-                                promise.reject(reason);
+                                promise._reject(reason);
                             }
                         });
                     }
                     catch (e) {
                         if (execute) {
-                            promise.reject(e);
+                            promise._reject(e);
                         }
                     }
                 }
                 else {
-                    promise.fulfill(x);
+                    promise._fulfill(x);
                 }
             };
-            CorePromise.prototype.toString = function () {
-                return "Promise";
+            CorePromise.prototype._transition = function (state, value) {
+                if (this._state == PromiseState.PENDING) {
+                    this._state = state;
+                    this._value = value;
+                    this._notifyCallbacks();
+                }
+            };
+            CorePromise.prototype._fulfill = function (value) {
+                this._transition(PromiseState.FULFILLED, value);
+                return this;
+            };
+            CorePromise.prototype._reject = function (reason) {
+                this._transition(PromiseState.REJECTED, reason);
+                return this;
+            };
+            CorePromise.prototype._notifyCallbacks = function () {
+                var _this = this;
+                if (this._state !== PromiseState.PENDING) {
+                    var followUps = this._followUps;
+                    this._followUps = [];
+                    com.ciplogic.nextTick(function () {
+                        for (var i = 0; i < followUps.length; i++) {
+                            var followUpPromise;
+                            followUpPromise = followUps[i].promise;
+                            try {
+                                if (followUps[i].callbacks[_this._state] == null) {
+                                    followUpPromise._transition(_this._state, _this._value);
+                                }
+                                else {
+                                    var result = followUps[i].callbacks[_this._state].call(undefined, _this._value);
+                                    CorePromise.resolvePromise(followUpPromise, result);
+                                }
+                            }
+                            catch (e) {
+                                followUpPromise._transition(PromiseState.REJECTED, e);
+                            }
+                        }
+                    });
+                }
             };
             return CorePromise;
         })();
