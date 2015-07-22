@@ -38,6 +38,8 @@ class PromiseFollowUp<X> {
  * receive either a promise’s eventual value or the reason why the promise cannot be fulfilled.</p>
  * <p>This implementation is fully compatible with the specification from: http://promisesaplus.com/,
  * and passes all the tests defined here: https://github.com/promises-aplus/promises-tests.</p>
+ *
+ * @inmodule "core-promise"
  */
 export class CorePromise<T> {
     private state : PromiseState;
@@ -54,14 +56,14 @@ export class CorePromise<T> {
             throw new Error("You need an executor(resolve, reject) to be passed to " +
                     "the constructor of a Promise");
         }
-        
+
         if (typeof this != "object") {
             throw new TypeError("The this object for a Promise must be an object.");
         }
-        
+
         this.followUps = [];
         this.state = PromiseState.PENDING;
-        
+
         try {
             executor((r) => {
                 CorePromise.resolvePromise(this, r);
@@ -100,7 +102,7 @@ export class CorePromise<T> {
 
         return followUp.promise;
     }
-    
+
     /**
      * Chain other callbacks after the promise gets rejected.
      */
@@ -199,20 +201,20 @@ export class CorePromise<T> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.all must be a constructor.");
         }
-        
+
         if (!iterable || typeof iterable.length == "undefined") {
             return CorePromise.reject(new TypeError("Passed a non iterable to Promise.all(): " + typeof iterable));
         }
-        
+
         if (iterable.length == 1) {
             return CorePromise.resolve(iterable[0])
                 .then((it) => [it]);
         }
-        
+
         if (iterable.length == 0) {
             return CorePromise.resolve([]);
         }
-        
+
         return new this<Array<any>>(function(resolve, reject) {
             var unresolvedPromisesCount = iterable.length,
                 resolvedValues = new Array(iterable.length);
@@ -220,7 +222,7 @@ export class CorePromise<T> {
             forEach(iterable, (it, i) => {
                 CorePromise.resolve(it).then((value) => {
                     resolvedValues[i] = value;
-                    
+
                     unresolvedPromisesCount--;
                     if (unresolvedPromisesCount == 0) {
                         resolve(resolvedValues);
@@ -237,7 +239,7 @@ export class CorePromise<T> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.reject must be a constructor.");
         }
-        
+
         return new this((fulfill, reject) => {
             reject(reason);
         });
@@ -253,23 +255,23 @@ export class CorePromise<T> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.race must be a constructor.");
         }
-        
+
         if (!iterable || typeof iterable.length == "undefined") {
             return CorePromise.reject(new TypeError("Passed a non iterable to Promise.race(): " + typeof iterable));
         }
-        
+
         if (iterable.length == 1) {
             return CorePromise.resolve(iterable[0])
                 .then((it) => [it]);
         }
-        
+
         if (iterable.length == 0) {
             return new this(function(resolve, reject) {});
         }
-        
+
         return new this<any>(function(resolve, reject) {
             var rejectedPromiseCount = 0;
-            
+
             for (var i = 0; i < iterable.length; i++) {
                 CorePromise.resolvePromise({
                     fulfill: resolve,

@@ -1,4 +1,4 @@
-declare module "core-promise"{
+declare module __require__core_promise{
     /**
      * <p>A promise represents the eventual result of an asynchronous operation. The primary way
      * of interacting with a promise is through its then method, which registers callbacks to

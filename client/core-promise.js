@@ -75,6 +75,8 @@ var com;
          * receive either a promise’s eventual value or the reason why the promise cannot be fulfilled.</p>
          * <p>This implementation is fully compatible with the specification from: http://promisesaplus.com/,
          * and passes all the tests defined here: https://github.com/promises-aplus/promises-tests.</p>
+         *
+         * @inmodule "core-promise"
          */
         var CorePromise = (function () {
             function CorePromise(executor) {

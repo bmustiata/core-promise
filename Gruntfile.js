@@ -17,7 +17,7 @@ module.exports = function(grunt) {
         typescript: {
             "dist" : {
                 options: {
-                    module : 'commonjs',
+                    module : "commonjs",
                     sourceMap: true,
                     declaration: true,
                 },
@@ -32,7 +32,7 @@ module.exports = function(grunt) {
 
             "client" : {
                 options: {
-                    module : 'amd',
+                    module : "amd",
                     sourceMap: true,
                     declaration: true,
                 },
@@ -44,23 +44,54 @@ module.exports = function(grunt) {
                     ]
                 }]
             }
+        },
+
+        tsdgen : {
+            "dist" : {
+                files : [
+                    {
+                        src: [
+                            "lib/core-promise.d.ts"
+                        ],
+                        dest: "./core-promise.d.ts"
+                    }
+                ]
+            }
+        },
+
+        tsdlocal : {
+            "dist" : {
+                options : {
+                    generateDefinitions : true
+                },
+                files : [
+                    {
+                        src: [
+                            "./core-promise.d.ts"
+                        ],
+                        dest: "./core-promise.local.d.ts"
+                    }
+                ]
+            }
         }
     });
 
     // load NPM tasks:
-    grunt.loadNpmTasks('grunt-typescript');
-    grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks("grunt-typescript");
+    grunt.loadNpmTasks("grunt-contrib-clean");
+    grunt.loadNpmTasks("tsdgen");
+    grunt.loadNpmTasks("tsdlocal");
 
     // register our tasks:
-    grunt.registerTask('clean-client', ['clean:client']);
-    grunt.registerTask('build-client', ['typescript:client']);
+    grunt.registerTask("clean-client", ["clean:client"]);
+    grunt.registerTask("build-client", ["typescript:client"]);
 
-    grunt.registerTask('clean-dist', ['clean:dist']);
-    grunt.registerTask('build-dist', ['typescript:dist']);
+    grunt.registerTask("clean-dist", ["clean:dist"]);
+    grunt.registerTask("build-dist", ["typescript:dist", "tsdgen:dist", "tsdlocal:dist"]);
 
-    grunt.registerTask('client', ['clean-client', 'build-client']);
-    grunt.registerTask('dist', ['clean-dist', 'build-dist']);
+    grunt.registerTask("client", ["clean-client", "build-client"]);
+    grunt.registerTask("dist", ["clean-dist", "build-dist"]);
 
-    grunt.registerTask('default', ['dist', 'client']);
+    grunt.registerTask("default", ["dist", "client"]);
 };
 

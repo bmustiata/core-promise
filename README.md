@@ -57,7 +57,7 @@ var p = new Promise(function(fulfill, reject)) {
 
 If you use TypeScript, then you should know that the core-promise bundles
 the definition file inside the module. So in order for you to get autocomplete,
-error checking etc, just add a reference to it, like so: 
+error checking etc, just add a reference to it, like so:
 
 ```typescript
 /// <reference path="node_modules/core-promise/core-promise.d.ts"/>
@@ -71,8 +71,19 @@ Promise.resolve("core-promise")
     });
 ```
 
+### Local modules definition
+
+If you want to use local modules (using [tsdlocal](https://github.com/bmustiata/tsdlocal)),
+and get all the type checking as well, you can get the local definition as well,
+and build your application monolithically.
+
+```typescript
+/// <reference path="node_modules/core-promise/core-promise.d.ts"/>
+```
+
 ## ChangeLog
 
+* 2015-07-22 v0.2.2 *BugFix* Added local.d.ts module file.
 * 2015-07-02 v0.2.1 *BugFix* Added d.ts module file. Recompiled bower client.
 * 2015-07-01 v0.2.0 ES6 compatible functions added (resolve, all, race, reject).
 * 2015-06-30 v0.1.3 Documentation.
