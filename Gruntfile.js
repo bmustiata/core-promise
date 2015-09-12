@@ -3,14 +3,22 @@
  */
 module.exports = function(grunt) {
     // configuration for the plugins.
+
+    // Project name:        core-promise
+    // Main ts module:      Promise
+    // Source folder:       src/main/ts
+    // Tests source folder: src/test/ts
+    // Output folder:       lib/
+    // Test output folder:  target/test/
+
     grunt.initConfig({
         clean: {
             dist : [
                 "lib/"
             ],
 
-            client : [
-                "client/"
+            test : [
+                "target/test"
             ]
         },
 
@@ -22,76 +30,75 @@ module.exports = function(grunt) {
                     declaration: true,
                 },
                 files: [{
-                    dest: "lib/core-promise.js",
+                    dest: "lib/",
                     src: [
-                        "src/main/node/**/*.ts",
-                        "src/main/node/**/*.d.ts"
+                        "src/main/ts/**/*.ts",
+                        "src/main/ts/**/*.d.ts"
                     ]
                 }]
             },
 
-            "client" : {
+            "test" : {
                 options: {
-                    module : "amd",
+                    module : "commonjs",
                     sourceMap: true,
                     declaration: true,
                 },
                 files: [{
-                    dest: "client/core-promise.js",
+                    dest: "target/test",
                     src: [
-                        "src/main/client/**/*.ts",
-                        "src/main/client/**/*.d.ts"
+                        "src/test/ts/**/*.ts",
+                        "src/test/ts/**/*.d.ts"
                     ]
                 }]
             }
         },
 
-        tsdgen : {
+        dtsGenerator : {
             "dist" : {
+                options: {
+                    name: "core-promise",
+                    baseDir: ".",
+                    out: "core-promise.d.ts",
+                    main: "core-promise/lib/Promise",
+                    excludes: [
+                        "node_modules/**/*.d.ts",
+                        "typings/**/*.d.ts"
+                    ]
+                },
+
                 files : [
                     {
+                        expand: true,
                         src: [
-                            "lib/core-promise.d.ts"
-                        ],
-                        dest: "./core-promise.d.ts"
+                            "lib/*.d.ts"
+                        ]
                     }
                 ]
             }
         },
 
-        tsdlocal : {
-            "dist" : {
-                options : {
-                    generateDefinitions : true
+        mochaTest: {
+            test: {
+                options: {
+                    reporter: "spec",
+                    captureFile: "target/test/tests_results.txt"
                 },
-                files : [
-                    {
-                        src: [
-                            "./core-promise.d.ts"
-                        ],
-                        dest: "./core-promise.local.d.ts"
-                    }
-                ]
+                src: ["target/test/**/*.js"]
             }
         }
     });
 
     // load NPM tasks:
-    grunt.loadNpmTasks("grunt-typescript");
     grunt.loadNpmTasks("grunt-contrib-clean");
-    grunt.loadNpmTasks("tsdgen");
-    grunt.loadNpmTasks("tsdlocal");
+    grunt.loadNpmTasks("grunt-typescript");
+    grunt.loadNpmTasks("dts-generator");
+    grunt.loadNpmTasks("grunt-mocha-test");
+
+    grunt.registerTask("dist", ["clean:dist", "typescript:dist", "dtsGenerator:dist"]);
+    grunt.registerTask("test", ["clean:test", "typescript:test", "mochaTest:test"]);
 
     // register our tasks:
-    grunt.registerTask("clean-client", ["clean:client"]);
-    grunt.registerTask("build-client", ["typescript:client"]);
-
-    grunt.registerTask("clean-dist", ["clean:dist"]);
-    grunt.registerTask("build-dist", ["typescript:dist", "tsdgen:dist", "tsdlocal:dist"]);
-
-    grunt.registerTask("client", ["clean-client", "build-client"]);
-    grunt.registerTask("dist", ["clean-dist", "build-dist"]);
-
-    grunt.registerTask("default", ["dist", "client"]);
+    grunt.registerTask("default", ["dist", "test"]);
 };
 

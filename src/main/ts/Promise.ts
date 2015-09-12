@@ -1,6 +1,4 @@
-/// <reference path="nextTick.ts"/>
-
-module com.ciplogic {
+import { nextTick } from "./nextTick";
 
 /**
  * Iterates over all the elements in the iterable, calling the callback on each one.
@@ -15,7 +13,7 @@ function forEach(iterable: Array<any>, callback: (value: any, index: number) => 
 /**
  * A promise can be in any of these states. FULFILLED and REJECTED are final states for a promise.
  */
-enum PromiseState {
+export enum PromiseState {
     FULFILLED,
     REJECTED,
     PENDING
@@ -27,7 +25,7 @@ enum PromiseState {
  * <p>The callback function for onFulfill, or onReject will be called at most once as per
  * Promises spec.</p>
  */
-class PromiseFollowUp<X> {
+export class PromiseFollowUp<X> {
     callbacks : Array<Function> = [ null, null ];
     promise : CorePromise<X> = null;
 }
@@ -41,7 +39,7 @@ class PromiseFollowUp<X> {
  *
  * @inmodule "core-promise"
  */
-export class CorePromise<T> {
+export class CorePromise<U> {
     private _state : PromiseState;
     private _value : any; // or reason if state == PromiseState.REJECTED
 
@@ -50,7 +48,7 @@ export class CorePromise<T> {
     /**
      * @param {object} executor A function with two parameters.
      */
-    constructor(executor : (resolve : (value) => void, reject : (value) => void) => any);
+    constructor(executor : (resolve : (value) => void, reject : (value) => void) => void);
     constructor(executor : (resolve : Function, reject : Function) => any) {
         if (!executor) {
             throw new Error("You need an executor(resolve, reject) to be passed to " +
@@ -93,10 +91,10 @@ export class CorePromise<T> {
      * @param onReject
      * @returns {Promise}
      */
-    then<V>(onFulfill?: (value: T) => CorePromise<V>, onReject?: (reason: any) => any): CorePromise<V>;
-    then<V>(onFulfill?: (value: T) => V, onReject?: (reason: any) => any): CorePromise<V>;
-    then<V>(onFulfill?: (value: T) => void, onReject?: (reason: any) => any): CorePromise<T>;
-    then(onFulfill? : (value : T) => any, onReject? : (reason : any) => any) : CorePromise<any> {
+    then<V,X,Y>(onFulfill?: (value: U) => CorePromise<V>, onReject?: (reason: X) => Y): CorePromise<V>;
+    then<V,X,Y>(onFulfill?: (value: U) => V, onReject?: (reason: X) => Y): CorePromise<V>;
+    then<V,X,Y>(onFulfill?: (value: U) => void, onReject?: (reason: X) => Y): CorePromise<U>;
+    then(onFulfill? : (value : U) => any, onReject? : (reason : any) => any) : CorePromise<any> {
         var followUp = new PromiseFollowUp();
 
         if (typeof onFulfill === "function") {
@@ -118,7 +116,7 @@ export class CorePromise<T> {
     /**
      * Chain other callbacks after the promise gets rejected.
      */
-    catch<T>(onReject?: (reason: any) => any): CorePromise<T>;
+    catch<T,X,Y>(onReject?: (reason: X) => Y): CorePromise<T>;
     catch(onReject? : (reason : any) => any) : CorePromise<any> {
         return this.then(undefined, onReject);
     }
@@ -129,7 +127,7 @@ export class CorePromise<T> {
      * with a finally block.
      * @param always
      */
-    always(fn : Function): CorePromise<T> {
+    always(fn : Function): CorePromise<U> {
         return this.then(function(result) {
             fn.apply(undefined);
             return result;
@@ -144,7 +142,7 @@ export class CorePromise<T> {
      */
     static resolve(x : number) : CorePromise<number>;
     static resolve(x : string) : CorePromise<string>;
-    static resolve(x : any) : CorePromise<any>;
+    static resolve<X, Y>(x : X) : CorePromise<Y>;
     static resolve<U>(x : any) : CorePromise<U> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.resolve must be a constructor.");
@@ -170,7 +168,7 @@ export class CorePromise<T> {
      * @param {Array<Promise<any>>} args
      * @returns {Promise<Iterable<T>>}
      */
-    public static all<T>(iterable: Array<CorePromise<any>>) : CorePromise<Array<T>> {
+    public static all<T,X>(iterable: Array<CorePromise<X>>) : CorePromise<Array<T>> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.all must be a constructor.");
         }
@@ -208,7 +206,7 @@ export class CorePromise<T> {
     /**
      * Create a new promise that is already rejected with the given value.
      */
-    static reject<U>(reason : any) : CorePromise<U> {
+    static reject<U,X>(reason : X) : CorePromise<U> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.reject must be a constructor.");
         }
@@ -224,7 +222,7 @@ export class CorePromise<T> {
      * @param {Array<Promise<any>>} args
      * @returns {Promise<Iterable<T>>}
      */
-    public static race<T>(iterable: Array<CorePromise<any>>) : CorePromise<Array<T>> {
+    public static race<T,X>(iterable: Array<CorePromise<X>>) : CorePromise<Array<T>> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.race must be a constructor.");
         }
@@ -245,7 +243,7 @@ export class CorePromise<T> {
         // if any of the promises is already done, resolve them faster.
         for (var i = 0; i < iterable.length; i++) {
             if (iterable[i] instanceof CorePromise && iterable[i]._state != PromiseState.PENDING) {
-                return iterable[i];
+                return <any> iterable[i];
             }
         }
         
@@ -266,8 +264,8 @@ export class CorePromise<T> {
      * @param {Promise} promise     The promise to resolve.
      * @param {any} x               The value to resolve against.
      */
-    private static resolvePromise<U>(promise : CorePromise<U>, x : any);
-    private static resolvePromise<U>(promise : any, x : any);
+    private static resolvePromise<U, X>(promise : CorePromise<U>, x : X);
+    private static resolvePromise<U, X, Y>(promise : X, x : Y);
     private static resolvePromise<U>(promise : CorePromise<U>, x : any) {
         if (promise === x) {
             throw new TypeError();
@@ -334,13 +332,13 @@ export class CorePromise<T> {
         }
     }
 
-    private _fulfill(value : T) : CorePromise<T> {
+    private _fulfill(value : U) : CorePromise<U> {
         this._transition(PromiseState.FULFILLED, value);
 
         return this;
     }
 
-    private _reject(reason : any) : CorePromise<T> {
+    private _reject(reason : any) : CorePromise<U> {
         this._transition(PromiseState.REJECTED, reason);
 
         return this;
@@ -351,7 +349,7 @@ export class CorePromise<T> {
             var followUps = this._followUps;
             this._followUps = [];
 
-            com.ciplogic.nextTick(() => {
+            nextTick(() => {
                 for (var i = 0; i < followUps.length; i++) {
                     var followUpPromise : CorePromise<any>; 
 
@@ -371,6 +369,4 @@ export class CorePromise<T> {
             });
         }
     }
-}
-
 }

@@ -99,6 +99,7 @@ your production code. Furthermore the native V8 promise implementation also fail
 
 All the other sequence tests in regards with timing, are passing.
 
+* 2015-09-12 v0.3.0 Use dts-generator. Removed bower support.
 * 2015-07-22 v0.2.3 *BugFix* Added local.d.ts module file.
 * 2015-07-02 v0.2.2 *BugFix* Fixed most ES6 tests. Except the ones that V8 itself fails.
 * 2015-07-02 v0.2.1 *BugFix* Added d.ts module file. Recompiled bower client.
