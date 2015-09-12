@@ -5,7 +5,7 @@
     "name": "Bogdan Mustiata",
     "email": "bogdan.mustiata@gmail.com"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "dependencies": {},
   "devDependencies": {
     "dts-generator": "^1.5.0",

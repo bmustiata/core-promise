@@ -3,7 +3,7 @@ declare module 'core-promise/lib/Promise' {
 	/**
 	 * A promise can be in any of these states. FULFILLED and REJECTED are final states for a promise.
 	 */
-	export declare enum PromiseState {
+	export enum PromiseState {
 	    FULFILLED = 0,
 	    REJECTED = 1,
 	    PENDING = 2,
@@ -14,7 +14,7 @@ declare module 'core-promise/lib/Promise' {
 	 * <p>The callback function for onFulfill, or onReject will be called at most once as per
 	 * Promises spec.</p>
 	 */
-	export declare class PromiseFollowUp<X> {
+	export class PromiseFollowUp<X> {
 	    callbacks: Array<Function>;
 	    promise: CorePromise<X>;
 	}
@@ -27,7 +27,7 @@ declare module 'core-promise/lib/Promise' {
 	 *
 	 * @inmodule "core-promise"
 	 */
-	export declare class CorePromise<U> implements Promise<U> {
+	export class CorePromise<U> implements Promise<U> {
 	    private _state;
 	    private _value;
 	    private _followUps;
@@ -91,12 +91,12 @@ declare module 'core-promise/lib/Promise' {
 	    private _reject(reason);
 	    private _notifyCallbacks();
 	}
-	export declare var DefaultPromise: PromiseConstructor | typeof CorePromise;
+	export var DefaultPromise: PromiseConstructor | typeof CorePromise;
 
 }
 declare module 'core-promise/lib/nextTick' {
 	/// <reference path="../typings/node/node.d.ts" />
-	export declare function nextTick(callback: Function): void;
+	export function nextTick(callback: Function): void;
 
 }
 declare module 'core-promise' {
