@@ -5,7 +5,7 @@
     "name": "Bogdan Mustiata",
     "email": "bogdan.mustiata@gmail.com"
   },
-  "version": "0.2.3",
+  "version": "0.3.0",
   "dependencies": {},
   "devDependencies": {
     "dts-generator": "^1.5.0",
@@ -16,9 +16,7 @@
     "grunt-typescript": "^0.6.2",
     "mocha": "^2.3.2",
     "promises-aplus-tests": "^2.1.0",
-    "promises-es6-tests": "^0.5.0",
-    "tsdgen": "^0.2.0",
-    "tsdlocal": "^0.1.5"
+    "promises-es6-tests": "^0.5.0"
   },
   "keywords": [
     "promise",

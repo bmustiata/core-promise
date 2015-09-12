@@ -6,10 +6,7 @@ tests as well (except a few tests that V8 itself fails).
 
 Comes with full TypeScript support.
 
-
-And works from IE8+ without any dependency. (`bower install core-promise`)
-
-
+And works from IE8+ without any dependency.
 
 ## IE8, IE9.. Usage
 
@@ -30,11 +27,11 @@ Just include it in the `<head>` of your page a reference to the core-promise js 
 
 ## Usage in Node
 
-The recommended way to use the `core-promise` is to use the Promise class, that
+The recommended way to use the `core-promise` is to use the DefaultPromise class, that
 will use the native Promise class if it is available (e.g. from node 0.12 up).
 
 ```javascript
-var Promise = require('core-promise').Promise,
+var Promise = require('core-promise').DefaultPromise,
     CorePromise = require('core-promise').CorePromise;
 
 // ..
@@ -55,22 +52,12 @@ error checking etc, just add a reference to it, like so:
 /// <reference path="node_modules/core-promise/core-promise.d.ts"/>
 
 import core = require("core-promise");
-import Promise = core.Promise;
+import Promise = core.DefaultPromise;
 
 Promise.resolve("core-promise")
     .then((x : number) => { // compile error, resolve returns a string
         console.log(x);
     });
-```
-
-### Local modules definition
-
-If you want to use local modules (using [tsdlocal](https://github.com/bmustiata/tsdlocal)),
-and get all the type checking as well, you can get the local definition as well,
-and build your application monolithically.
-
-```typescript
-/// <reference path="node_modules/core-promise/core-promise.d.ts"/>
 ```
 
 ## Test Failures

@@ -1,3 +1,4 @@
+/// <reference path="../node_modules/grunt-typescript/node_modules/typescript/bin/lib.es6.d.ts" />
 /**
  * A promise can be in any of these states. FULFILLED and REJECTED are final states for a promise.
  */
@@ -25,7 +26,7 @@ export declare class PromiseFollowUp<X> {
  *
  * @inmodule "core-promise"
  */
-export declare class CorePromise<U> {
+export declare class CorePromise<U> implements Promise<U> {
     private _state;
     private _value;
     private _followUps;
@@ -89,3 +90,4 @@ export declare class CorePromise<U> {
     private _reject(reason);
     private _notifyCallbacks();
 }
+export declare var DefaultPromise: PromiseConstructor | typeof CorePromise;

@@ -1,3 +1,5 @@
+/// <reference path="../../../node_modules/grunt-typescript/node_modules/typescript/bin/lib.es6.d.ts"/>
+
 import { nextTick } from "./nextTick";
 
 /**
@@ -39,7 +41,7 @@ export class PromiseFollowUp<X> {
  *
  * @inmodule "core-promise"
  */
-export class CorePromise<U> {
+export class CorePromise<U> implements Promise<U> {
     private _state : PromiseState;
     private _value : any; // or reason if state == PromiseState.REJECTED
 
@@ -370,3 +372,5 @@ export class CorePromise<U> {
         }
     }
 }
+
+export var DefaultPromise = typeof Promise == "undefined" ? CorePromise : Promise;
