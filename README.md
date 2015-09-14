@@ -86,6 +86,7 @@ your production code. Furthermore the native V8 promise implementation also fail
 
 All the other sequence tests in regards with timing, are passing.
 
+* 2015-09-15 v0.3.2 *BugFix* CorePromise implements the Promise interface.
 * 2015-09-12 v0.3.1 *BugFix* Fixed definitions.
 * 2015-09-12 v0.3.0 Use dts-generator. Removed bower support.
 * 2015-07-22 v0.2.3 *BugFix* Added local.d.ts module file.

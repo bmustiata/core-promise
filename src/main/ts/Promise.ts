@@ -15,7 +15,7 @@ function forEach(iterable: Array<any>, callback: (value: any, index: number) => 
 /**
  * A promise can be in any of these states. FULFILLED and REJECTED are final states for a promise.
  */
-export enum PromiseState {
+enum PromiseState {
     FULFILLED,
     REJECTED,
     PENDING
@@ -27,7 +27,7 @@ export enum PromiseState {
  * <p>The callback function for onFulfill, or onReject will be called at most once as per
  * Promises spec.</p>
  */
-export class PromiseFollowUp<X> {
+class PromiseFollowUp<X> {
     callbacks : Array<Function> = [ null, null ];
     promise : CorePromise<X> = null;
 }
@@ -41,16 +41,18 @@ export class PromiseFollowUp<X> {
  *
  * @inmodule "core-promise"
  */
-export class CorePromise<U> implements Promise<U> {
+export class CorePromise<T> implements Promise<T>, Symbol {
     private _state : PromiseState;
     private _value : any; // or reason if state == PromiseState.REJECTED
 
     private _followUps;
 
+    [Symbol.toStringTag] : string;
+
     /**
      * @param {object} executor A function with two parameters.
      */
-    constructor(executor : (resolve : (value) => void, reject : (value) => void) => void);
+    constructor(executor : (resolve : (value) => void, reject : (value) => void) => any);
     constructor(executor : (resolve : Function, reject : Function) => any) {
         if (!executor) {
             throw new Error("You need an executor(resolve, reject) to be passed to " +
@@ -93,10 +95,12 @@ export class CorePromise<U> implements Promise<U> {
      * @param onReject
      * @returns {Promise}
      */
-    then<V,X,Y>(onFulfill?: (value: U) => CorePromise<V>, onReject?: (reason: X) => Y): CorePromise<V>;
-    then<V,X,Y>(onFulfill?: (value: U) => V, onReject?: (reason: X) => Y): CorePromise<V>;
-    then<V,X,Y>(onFulfill?: (value: U) => void, onReject?: (reason: X) => Y): CorePromise<U>;
-    then(onFulfill? : (value : U) => any, onReject? : (reason : any) => any) : CorePromise<any> {
+    then<V>(onFulfill?: (value: T) => CorePromise<V>, onReject?: (reason: any) => any): CorePromise<V>;
+    then<V>(onFulfill?: (value: T) => V, onReject?: (reason: any) => any): CorePromise<V>;
+    then<V>(onFulfill?: (value: T) => void, onReject?: (reason: any) => any): CorePromise<T>;
+    then<TResult>(onfulfilled?: (value: T) => TResult | Promise<TResult> | CorePromise<TResult>, 
+                  onrejected?: (reason: any) => TResult | Promise<TResult> | CorePromise<TResult>): CorePromise<TResult>;    
+    then(onFulfill? : (value : T) => any, onReject? : (reason : any) => any) : CorePromise<any> {
         var followUp = new PromiseFollowUp();
 
         if (typeof onFulfill === "function") {
@@ -118,7 +122,7 @@ export class CorePromise<U> implements Promise<U> {
     /**
      * Chain other callbacks after the promise gets rejected.
      */
-    catch<T,X,Y>(onReject?: (reason: X) => Y): CorePromise<T>;
+    catch<T>(onReject?: (reason: any) => any): CorePromise<T>;
     catch(onReject? : (reason : any) => any) : CorePromise<any> {
         return this.then(undefined, onReject);
     }
@@ -129,7 +133,7 @@ export class CorePromise<U> implements Promise<U> {
      * with a finally block.
      * @param always
      */
-    always(fn : Function): CorePromise<U> {
+    always(fn : Function): CorePromise<T> {
         return this.then(function(result) {
             fn.apply(undefined);
             return result;
@@ -140,12 +144,22 @@ export class CorePromise<U> implements Promise<U> {
     }
 
     /**
+      * Creates a new resolved promise for the provided value.
+      * @param value A promise.
+      * @returns A promise whose internal state matches the provided promise.
+      */
+    static resolve<T>(value: T | Promise<T>): Promise<T>;
+
+    /**
+     * Creates a new resolved promise .
+     * @returns A resolved promise.
+     */
+    static resolve(): Promise<void>;
+    
+    /**
      * Resolve the given value, using the promise resolution algorithm.
      */
-    static resolve(x : number) : CorePromise<number>;
-    static resolve(x : string) : CorePromise<string>;
-    static resolve<X, Y>(x : X) : CorePromise<Y>;
-    static resolve<U>(x : any) : CorePromise<U> {
+    static resolve(x? : any) : any {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.resolve must be a constructor.");
         }
@@ -165,12 +179,28 @@ export class CorePromise<U> implements Promise<U> {
     }
 
     /**
+     * Creates a Promise that is resolved with an array of results when all of the provided Promises 
+     * resolve, or rejected when any Promise is rejected.
+     * @param values An array of Promises.
+     * @returns A new Promise.
+     */
+    public static all<T>(values: (T | Promise<T>)[]): Promise<T[]>;
+
+    /**
+     * Creates a Promise that is resolved with an array of results when all of the provided Promises
+     * resolve, or rejected when any Promise is rejected.
+     * @param values An array of values.
+     * @returns A new Promise.
+     */
+    public static all(values: Promise<void>[]): Promise<void>;
+
+    /**
      * The Promise.all(iterable) method returns a promise that resolves when all of the promises
      * in the iterable argument have resolved.
      * @param {Array<Promise<any>>} args
      * @returns {Promise<Iterable<T>>}
      */
-    public static all<T,X>(iterable: Array<CorePromise<X>>) : CorePromise<Array<T>> {
+    public static all(iterable: any[]) : any {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.all must be a constructor.");
         }
@@ -205,10 +235,25 @@ export class CorePromise<U> implements Promise<U> {
         });
     }
 
+
+    /**
+     * Creates a new rejected promise for the provided reason.
+     * @param reason The reason the promise was rejected.
+     * @returns A new rejected Promise.
+     */
+    public static reject(reason: any): Promise<void>;
+
+    /**
+     * Creates a new rejected promise for the provided reason.
+     * @param reason The reason the promise was rejected.
+     * @returns A new rejected Promise.
+     */
+    public static reject<T>(reason: any): Promise<T>;
+
     /**
      * Create a new promise that is already rejected with the given value.
      */
-    static reject<U,X>(reason : X) : CorePromise<U> {
+    static reject<U>(reason : any) : CorePromise<U> {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.reject must be a constructor.");
         }
@@ -219,12 +264,20 @@ export class CorePromise<U> implements Promise<U> {
     }
 
     /**
+     * Creates a Promise that is resolved or rejected when any of the provided Promises are resolved 
+     * or rejected.
+     * @param values An array of Promises.
+     * @returns A new Promise.
+     */
+    public static race<T>(values: (T | Promise<T>)[]): Promise<T>;
+
+    /**
      * The Promise.race(iterable) method returns the first promise that resolves or
      * rejects from the iterable argument.
      * @param {Array<Promise<any>>} args
      * @returns {Promise<Iterable<T>>}
      */
-    public static race<T,X>(iterable: Array<CorePromise<X>>) : CorePromise<Array<T>> {
+    public static race<T>(iterable: any[]) : any {
         if (typeof this != "function") {
             throw new TypeError("The this of Promise.race must be a constructor.");
         }
@@ -245,7 +298,7 @@ export class CorePromise<U> implements Promise<U> {
         // if any of the promises is already done, resolve them faster.
         for (var i = 0; i < iterable.length; i++) {
             if (iterable[i] instanceof CorePromise && iterable[i]._state != PromiseState.PENDING) {
-                return <any> iterable[i];
+                return iterable[i];
             }
         }
         
@@ -266,8 +319,8 @@ export class CorePromise<U> implements Promise<U> {
      * @param {Promise} promise     The promise to resolve.
      * @param {any} x               The value to resolve against.
      */
-    private static resolvePromise<U, X>(promise : CorePromise<U>, x : X);
-    private static resolvePromise<U, X, Y>(promise : X, x : Y);
+    private static resolvePromise<U>(promise : CorePromise<U>, x : any);
+    private static resolvePromise<U>(promise : any, x : any);
     private static resolvePromise<U>(promise : CorePromise<U>, x : any) {
         if (promise === x) {
             throw new TypeError();
@@ -334,13 +387,13 @@ export class CorePromise<U> implements Promise<U> {
         }
     }
 
-    private _fulfill(value : U) : CorePromise<U> {
+    private _fulfill(value : T) : CorePromise<T> {
         this._transition(PromiseState.FULFILLED, value);
 
         return this;
     }
 
-    private _reject(reason : any) : CorePromise<U> {
+    private _reject(reason : any) : CorePromise<T> {
         this._transition(PromiseState.REJECTED, reason);
 
         return this;
