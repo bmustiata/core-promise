@@ -426,4 +426,4 @@ export class CorePromise<T> implements Promise<T>, Symbol {
     }
 }
 
-export var DefaultPromise = typeof Promise == "undefined" ? CorePromise : Promise;
+export var DefaultPromise = (typeof Promise == "undefined") ? CorePromise : Promise;
