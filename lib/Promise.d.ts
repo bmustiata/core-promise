@@ -94,4 +94,4 @@ export declare class CorePromise<T> implements Promise<T>, Symbol {
     private _reject(reason);
     private _notifyCallbacks();
 }
-export declare var DefaultPromise: PromiseConstructor | typeof CorePromise;
+export declare var DefaultPromise: PromiseConstructor;

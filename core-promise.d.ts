@@ -95,7 +95,7 @@ declare module 'core-promise/lib/Promise' {
 	    private _reject(reason);
 	    private _notifyCallbacks();
 	}
-	export var DefaultPromise: PromiseConstructor | typeof CorePromise;
+	export var DefaultPromise: PromiseConstructor;
 
 }
 declare module 'core-promise/lib/nextTick' {
